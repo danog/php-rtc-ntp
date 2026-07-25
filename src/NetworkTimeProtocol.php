@@ -21,7 +21,11 @@ use DateTimeZone;
  * This class provides functionality to work with NTP (Network Time Protocol) timestamps.
  * NTP timestamps are based on a custom epoch (January 1, 1900, 00:00:00 UTC) and are represented
  * as 64-bit fixed-point numbers, where the high 32 bits represent seconds and the low 32 bits
- * represent fractional seconds. This class uses GMP for handling large numbers.
+ * represent fractional seconds.
+ *
+ * The full 64-bit value does not fit in a *signed* PHP integer, so it is kept as the raw 64-bit
+ * bit pattern (i.e. it may be negative) and every extraction masks off the bits it needs: this
+ * yields the same results as unsigned arithmetic without requiring the GMP extension.
  */
 class NetworkTimeProtocol
 {
@@ -52,10 +56,10 @@ class NetworkTimeProtocol
     /**
      * Get the current NTP time as a 64-bit fixed-point number.
      *
-     * @return string The current NTP timestamp as a string.
+     * @return int The current NTP timestamp.
      * @throws DateMalformedStringException
      */
-    public static function currentNtpTime(): string
+    public static function currentNtpTime(): int
     {
         return self::fromDatetime(self::currentDatetime());
     }
@@ -63,20 +67,20 @@ class NetworkTimeProtocol
     /**
      * Convert an NTP timestamp to a DateTimeImmutable object.
      *
-     * @param string $ntp The NTP timestamp as a string (can be larger than 64 bits).
+     * @param int|string $ntp The raw 64-bit NTP timestamp.
      * @return DateTimeImmutable The corresponding DateTime object in UTC.
      * @throws DateMalformedStringException
      */
-    public static function toDatetime(string $ntp): DateTimeImmutable
+    public static function toDatetime(int|string $ntp): DateTimeImmutable
     {
-        $ntp = gmp_init($ntp);
+        $ntp = (int) $ntp;
 
-        // Extract the high 32 bits (seconds) and low 32 bits (fractional seconds)
-        $high = gmp_div_q($ntp, gmp_pow(2, 32)); // Seconds
-        $low = gmp_mod($ntp, gmp_pow(2, 32));   // Fractional seconds
+        // Extract the high 32 bits (seconds) and low 32 bits (fractional seconds).
+        $high = ($ntp >> 32) & 0xFFFFFFFF; // Seconds
+        $low = $ntp & 0xFFFFFFFF;          // Fractional seconds
 
-        $microseconds = gmp_intval(gmp_div_q(gmp_mul($low, 1000000), gmp_pow(2, 32)));
-        $timestamp = self::NTP_EPOCH + gmp_intval($high);
+        $microseconds = intdiv($low * 1000000, 1 << 32);
+        $timestamp = self::NTP_EPOCH + $high;
         $datetime = new DateTimeImmutable('@' . $timestamp, new DateTimeZone('UTC'));
 
         return $datetime->modify("+$microseconds microseconds");
@@ -86,20 +90,17 @@ class NetworkTimeProtocol
      * Convert a DateTimeImmutable object to an NTP timestamp.
      *
      * @param DateTimeImmutable $dt The DateTime object to convert.
-     * @return string The NTP timestamp as a string.
+     * @return int The raw 64-bit NTP timestamp.
      */
-    public static function fromDatetime(DateTimeImmutable $dt): string
+    public static function fromDatetime(DateTimeImmutable $dt): int
     {
         $delta = $dt->getTimestamp() - self::NTP_EPOCH;
-        $microseconds = (int)$dt->format('u'); // Microseconds
+        $microseconds = (int) $dt->format('u'); // Microseconds
 
-        // Calculate the high and low parts
-        $high = gmp_init($delta); // Seconds since NTP epoch
-        $low = gmp_init((int)(($microseconds * (1 << 32)) / 1000000)); // Fractional seconds
+        $high = $delta & 0xFFFFFFFF; // Seconds since NTP epoch
+        $low = intdiv($microseconds * (1 << 32), 1000000) & 0xFFFFFFFF; // Fractional seconds
 
-        // Combine high and low parts into a single GMP number
-        $ntp = gmp_add(gmp_mul($high, gmp_pow(2, 32)), $low);
-
-        return gmp_strval($ntp);
+        // Combine both halves into the raw 64-bit NTP bit pattern.
+        return ($high << 32) | $low;
     }
 }
