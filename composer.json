@@ -23,8 +23,7 @@
         }
     ],
     "require": {
-        "php": "^8.4",
-        "ext-gmp": "*"
+        "php": "^8.2"
     },
     "require-dev": {
         "phpunit/php-code-coverage": "11.0.x-dev",

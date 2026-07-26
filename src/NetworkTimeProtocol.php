@@ -30,7 +30,7 @@ use DateTimeZone;
 class NetworkTimeProtocol
 {
     /** The NTP epoch (January 1, 1900, 00:00:00 UTC) as a Unix timestamp. */
-    private const int NTP_EPOCH = -2208988800; // strtotime('1900-01-01 00:00:00 UTC')
+    private const NTP_EPOCH = -2208988800; // strtotime('1900-01-01 00:00:00 UTC')
 
     /**
      * Get the current datetime in UTC.
