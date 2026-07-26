@@ -41,6 +41,22 @@ class NetworkTimeProtocolTest extends TestCase
     public function testDatetimeToNtp()
     {
         $dt = new DateTimeImmutable('2018-06-28 09:03:05.423998', new DateTimeZone('UTC'));
-        $this->assertEquals(16059593044731306503, NetworkTimeProtocol::fromDatetime($dt));
+        // The raw 64-bit pattern is a negative PHP integer, so compare the unsigned rendering:
+        // asserting against the literal would compare against a lossy float.
+        $this->assertSame(
+            '16059593044731306503',
+            NetworkTimeProtocol::toUnsignedString(NetworkTimeProtocol::fromDatetime($dt))
+        );
+    }
+
+    public function testUnsignedStringRoundTrip()
+    {
+        foreach (['0', '1', '9223372036854775807', '9223372036854775808', '16059593044731306503', '18446744073709551615'] as $ntp) {
+            $this->assertSame(
+                $ntp,
+                NetworkTimeProtocol::toUnsignedString(NetworkTimeProtocol::fromUnsignedString($ntp)),
+                "round trip of $ntp"
+            );
+        }
     }
 }

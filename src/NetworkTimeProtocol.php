@@ -73,7 +73,7 @@ class NetworkTimeProtocol
      */
     public static function toDatetime(int|string $ntp): DateTimeImmutable
     {
-        $ntp = (int) $ntp;
+        $ntp = is_string($ntp) ? self::fromUnsignedString($ntp) : $ntp;
 
         // Extract the high 32 bits (seconds) and low 32 bits (fractional seconds).
         $high = ($ntp >> 32) & 0xFFFFFFFF; // Seconds
@@ -101,6 +101,51 @@ class NetworkTimeProtocol
         $low = intdiv($microseconds * (1 << 32), 1000000) & 0xFFFFFFFF; // Fractional seconds
 
         // Combine both halves into the raw 64-bit NTP bit pattern.
+        return ($high << 32) | $low;
+    }
+
+    /**
+     * Render a raw 64-bit NTP timestamp as the unsigned decimal number it stands for.
+     *
+     * The raw bit pattern is a *signed* PHP integer and is therefore negative for every
+     * timestamp past 1968-01-20, so it cannot be printed directly.
+     *
+     * @param int $ntp The raw 64-bit NTP timestamp.
+     * @return string The timestamp as an unsigned decimal string.
+     */
+    public static function toUnsignedString(int $ntp): string
+    {
+        return sprintf('%u', $ntp);
+    }
+
+    /**
+     * Parse an unsigned decimal NTP timestamp into its raw 64-bit bit pattern.
+     *
+     * Values above PHP_INT_MAX cannot survive a plain (int) cast, which saturates, so the
+     * digits are folded into two 32-bit halves that each stay well inside the integer range.
+     *
+     * @param string $ntp The timestamp as an unsigned decimal string.
+     * @return int The raw 64-bit NTP timestamp.
+     */
+    public static function fromUnsignedString(string $ntp): int
+    {
+        $ntp = ltrim($ntp);
+
+        if ($ntp === '' || !ctype_digit($ntp)) {
+            // Leave anything that is not a plain unsigned decimal to the usual cast.
+            return (int) $ntp;
+        }
+
+        $high = 0;
+        $low = 0;
+
+        for ($i = 0, $len = strlen($ntp); $i < $len; $i++) {
+            $low = $low * 10 + (ord($ntp[$i]) - 48);
+            $high = $high * 10 + ($low >> 32);
+            $low &= 0xFFFFFFFF;
+            $high &= 0xFFFFFFFF;
+        }
+
         return ($high << 32) | $low;
     }
 }
