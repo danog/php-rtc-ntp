@@ -10,7 +10,7 @@ The NetworkTimeProtocol class provides utility methods for working with NTP (Net
 
 This is the `danog/php-rtc-ntp` fork used by MadelineProto. It targets PHP 8.2+, removes the GMP dependency, and correctly handles unsigned NTP values above `PHP_INT_MAX` using pure-PHP arithmetic.
 
-The forked stack keeps the upstream `quasarstream/*` dependency constraints for compatibility. Each `danog/php-rtc-*` package replaces its upstream counterpart, so consumers select the complete maintained stack by requiring the corresponding danog packages together.
+All internal Composer dependencies use their `danog/php-rtc-*` package names directly, so installing a component selects the maintained danog packages throughout the dependency graph.
 
 ##  Features
 

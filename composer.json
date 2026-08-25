@@ -40,8 +40,5 @@
             "Tests\\Webrtc\\NTP\\": "tests"
         }
     },
-    "minimum-stability": "dev",
-    "replace": {
-        "quasarstream/ntp": "self.version"
-    }
+    "minimum-stability": "dev"
 }
