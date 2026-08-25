@@ -67,18 +67,11 @@ class NetworkTimeProtocol
     /**
      * Convert an NTP timestamp to a DateTimeImmutable object.
      *
-     * @param int|string $ntp The raw 64-bit NTP timestamp.
      * @return DateTimeImmutable The corresponding DateTime object in UTC.
      * @throws DateMalformedStringException
      */
-    public static function toDatetime(int|string $ntp): DateTimeImmutable
+    public static function toDatetime(int $high, int $low): DateTimeImmutable
     {
-        $ntp = is_string($ntp) ? self::fromUnsignedString($ntp) : $ntp;
-
-        // Extract the high 32 bits (seconds) and low 32 bits (fractional seconds).
-        $high = ($ntp >> 32) & 0xFFFFFFFF; // Seconds
-        $low = $ntp & 0xFFFFFFFF;          // Fractional seconds
-
         $microseconds = intdiv($low * 1000000, 1 << 32);
         $timestamp = self::NTP_EPOCH + $high;
         $datetime = new DateTimeImmutable('@' . $timestamp, new DateTimeZone('UTC'));
