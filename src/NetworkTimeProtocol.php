@@ -56,10 +56,9 @@ class NetworkTimeProtocol
     /**
      * Get the current NTP time as a 64-bit fixed-point number.
      *
-     * @return int The current NTP timestamp.
      * @throws DateMalformedStringException
      */
-    public static function currentNtpTime(): int
+    public static function currentNtpTime(): array
     {
         return self::fromDatetime(self::currentDatetime());
     }
