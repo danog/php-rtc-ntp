@@ -34,8 +34,8 @@ class NetworkTimeProtocolTest extends TestCase
 
     public function testDatetimeFromNtp()
     {
-        $expectedDatetime = new DateTimeImmutable('2018-06-28 09:03:05.423997', new DateTimeZone('UTC'));
-        $this->assertEquals($expectedDatetime, NetworkTimeProtocol::toDatetime("16059593044731306503"));
+        $expectedDatetime = new DateTimeImmutable('2018-03-04T10:22:19.082427+0000', new DateTimeZone('UTC'));
+        $this->assertEquals($expectedDatetime, NetworkTimeProtocol::toDatetime(3729147739, 354025564));
     }
 
     public function testDatetimeToNtp()
