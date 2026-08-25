@@ -83,9 +83,9 @@ class NetworkTimeProtocol
      * Convert a DateTimeImmutable object to an NTP timestamp.
      *
      * @param DateTimeImmutable $dt The DateTime object to convert.
-     * @return int The raw 64-bit NTP timestamp.
+     * @return array
      */
-    public static function fromDatetime(DateTimeImmutable $dt): int
+    public static function fromDatetime(DateTimeImmutable $dt): array
     {
         $delta = $dt->getTimestamp() - self::NTP_EPOCH;
         $microseconds = (int) $dt->format('u'); // Microseconds
@@ -94,6 +94,6 @@ class NetworkTimeProtocol
         $low = intdiv($microseconds * (1 << 32), 1000000) & 0xFFFFFFFF; // Fractional seconds
 
         // Combine both halves into the raw 64-bit NTP bit pattern.
-        return ($high << 32) | $low;
+        return [$high, $low];
     }
 }
