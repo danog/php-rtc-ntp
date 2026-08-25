@@ -1,7 +1,7 @@
 {
     "name": "danog/php-rtc-ntp",
     "type": "library",
-    "description": "The NetworkTimeProtocol class provides utility methods for working with NTP (Network Time Protocol) timestamps in PHP. Fork with FFI made optional and a pure-PHP DTLS/SRTP stack, maintained for MadelineProto.",
+    "description": "Pure-PHP NTP timestamp conversion for WebRTC. MadelineProto's PHP 8.2+ fork fixes unsigned 64-bit handling and integrates with the modular danog/php-rtc stack.",
     "keywords": [
         "multicastdns",
         "ntp"
