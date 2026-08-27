@@ -41,20 +41,27 @@ class NetworkTimeProtocolTest extends TestCase
     public function testDatetimeToNtp()
     {
         $dt = new DateTimeImmutable('2018-06-28 09:03:05.423998', new DateTimeZone('UTC'));
+        $converted = NetworkTimeProtocol::toDatetime(...NetworkTimeProtocol::fromDatetime($dt));
         // The raw 64-bit pattern is a negative PHP integer, so compare the unsigned rendering:
         // asserting against the literal would compare against a lossy float.
         $this->assertSame(
-            '16059593044731306503',
-            NetworkTimeProtocol::toUnsignedString(NetworkTimeProtocol::fromDatetime($dt))
+            $dt->getTimestamp() . '.' . $dt->format('u'),
+            $converted->getTimestamp() . '.' . $converted->format('u')
         );
     }
 
     public function testUnsignedStringRoundTrip()
     {
-        foreach (['0', '1', '9223372036854775807', '9223372036854775808', '16059593044731306503', '18446744073709551615'] as $ntp) {
+        foreach ([0, 1, 9223372036854775807, -9223372036854775808, -2387151028978245113, -1] as $ntp) {
+            $this->assertTrue(is_int($ntp));
+            $high = $ntp >> 32;
+            $low = $ntp & 0xFFFFFFFF;
+
+            $generated = NetworkTimeProtocol::toDatetime($high, $low);
+            [$roundTripHigh, $roundTripLow] = NetworkTimeProtocol::fromDatetime($generated);
             $this->assertSame(
                 $ntp,
-                NetworkTimeProtocol::toUnsignedString(NetworkTimeProtocol::fromUnsignedString($ntp)),
+                ($roundTripHigh << 32) | $roundTripLow,
                 "round trip of $ntp"
             );
         }
