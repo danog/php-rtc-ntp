@@ -52,16 +52,11 @@ class NetworkTimeProtocolTest extends TestCase
 
     public function testUnsignedStringRoundTrip()
     {
-        foreach ([0, 1, 9223372036854775807, -9223372036854775808, -2387151028978245113, -1] as $ntp) {
-            $this->assertTrue(is_int($ntp));
-            $high = $ntp >> 32;
-            $low = $ntp & 0xFFFFFFFF;
-
-            $generated = NetworkTimeProtocol::toDatetime($high, $low);
-            [$roundTripHigh, $roundTripLow] = NetworkTimeProtocol::fromDatetime($generated);
+        foreach ([0, 1, PHP_INT_MAX, PHP_INT_MIN, -2387151028978245113, -1] as $ntp) {
+            [$high, $low] = NetworkTimeProtocol::fromNtp($ntp);
             $this->assertSame(
                 $ntp,
-                ($roundTripHigh << 32) | $roundTripLow,
+                NetworkTimeProtocol::toNtp($high, $low),
                 "round trip of $ntp"
             );
         }

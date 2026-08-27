@@ -95,4 +95,35 @@ class NetworkTimeProtocol
         // Combine both halves into the raw 64-bit NTP bit pattern.
         return [$high, $low];
     }
+
+    /**
+     * Merge two 32-bit NTP halves back into the raw 64-bit bit pattern.
+     *
+     * The full 64-bit value does not fit in a *signed* PHP integer, so it is kept as the raw
+     * bit pattern (i.e. it may be negative). Only integer arithmetic is used: no floating point
+     * and no decimal-string round trips, so the result is exactly the value that {@see fromNtp()}
+     * split.
+     *
+     * @param int $high The high 32 bits (whole seconds since the NTP epoch).
+     * @param int $low The low 32 bits (fractional seconds).
+     * @return int The raw 64-bit NTP bit pattern.
+     */
+    public static function toNtp(int $high, int $low): int
+    {
+        return ($high << 32) | $low;
+    }
+
+    /**
+     * Split a raw 64-bit NTP bit pattern into its two 32-bit halves.
+     *
+     * The high half is the arithmetic (sign-extending) shift, so the caller gets the same bit
+     * pattern back from {@see toNtp()}. Uses only integer arithmetic.
+     *
+     * @param int $ntp The raw 64-bit NTP bit pattern.
+     * @return array{0: int, 1: int} The [high, low] halves.
+     */
+    public static function fromNtp(int $ntp): array
+    {
+        return [$ntp >> 32, $ntp & 0xFFFFFFFF];
+    }
 }
