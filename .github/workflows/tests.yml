@@ -16,11 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up PHP 8.4 with GMP extension
+      - name: Set up PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
-          extensions: gmp
           tools: composer:v2
 
       - name: Validate composer.json and composer.lock
@@ -41,7 +40,6 @@ jobs:
       - name: Check PHP version and extensions
         run: |
           php -v
-          php -m | grep -i gmp
 
       - name: Run PHPUnit tests
         run: vendor/bin/phpunit
