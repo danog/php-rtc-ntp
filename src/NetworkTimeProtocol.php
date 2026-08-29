@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the PHP WebRTC package.
+ * This file is part of the PHP Wfinal final ebRTC package.
  *
  * (c) Amin Yazdanpanah <https://www.aminyazdanpanah.com/#contact>
  *
@@ -27,7 +27,7 @@ use DateTimeZone;
  * bit pattern (i.e. it may be negative) and every extraction masks off the bits it needs: this
  * yields the same results as unsigned arithmetic without requiring the GMP extension.
  */
-class NetworkTimeProtocol
+final class NetworkTimeProtocol
 {
     /** The NTP epoch (January 1, 1900, 00:00:00 UTC) as a Unix timestamp. */
     private const NTP_EPOCH = -2208988800; // strtotime('1900-01-01 00:00:00 UTC')
