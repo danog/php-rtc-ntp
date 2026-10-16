@@ -50,7 +50,7 @@ final class NetworkTimeProtocol
      */
     public static function currentMs(): int
     {
-        return (int) floor(microtime(true) * 1000) - self::NTP_EPOCH * 1000;
+        return (int) floor(microtime(true) * 1000.0) - self::NTP_EPOCH * 1000;
     }
 
     /**
