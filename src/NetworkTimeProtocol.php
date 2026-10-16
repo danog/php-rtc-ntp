@@ -50,13 +50,13 @@ final class NetworkTimeProtocol
      */
     public static function currentMs(): int
     {
-        return (time() - self::NTP_EPOCH) * 1000;
+        return (int) floor(microtime(true) * 1000) - self::NTP_EPOCH * 1000;
     }
 
     /**
      * Get the current NTP time as a 64-bit fixed-point number.
      *
-     * @throws DateMalformedStringException
+     * @return array{int, int} The seconds and the fraction of a second, in units of 2^-32 seconds.
      */
     public static function currentNtpTime(): array
     {

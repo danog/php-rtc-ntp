@@ -30,6 +30,10 @@ class NetworkTimeProtocolTest extends TestCase
 
         ClockMock::withClockMock(strtotime('2018-09-11 00:00:01'));
         $this->assertEquals(3745612801000, NetworkTimeProtocol::currentMs());
+
+        // Milliseconds, not just seconds.
+        ClockMock::withClockMock(strtotime('2018-09-11 00:00:01') + 0.2505);
+        $this->assertEquals(3745612801250, NetworkTimeProtocol::currentMs());
     }
 
     public function testDatetimeFromNtp()
