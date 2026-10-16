@@ -60,7 +60,13 @@ final class NetworkTimeProtocol
      */
     public static function currentNtpTime(): array
     {
-        return self::fromDatetime(self::currentDatetime());
+        // Like fromDatetime(currentDatetime()), without creating and formatting date objects: this is
+        // called for every packet that is sent.
+        $now = gettimeofday();
+        $high = ($now['sec'] - self::NTP_EPOCH) & 0xFFFFFFFF;
+        $low = intdiv($now['usec'] * (1 << 32), 1000000) & 0xFFFFFFFF;
+
+        return [$high, $low];
     }
 
     /**

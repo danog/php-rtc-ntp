@@ -70,12 +70,13 @@ class NetworkTimeProtocolTest extends TestCase
         // currentNtpTime() is fromDatetime(currentDatetime()); bracket it with two real clock
         // reads so the assertion holds even across a second boundary, without mocking (ClockMock
         // freezes time() but not the DateTimeImmutable('now') this path uses).
-        [$loHigh] = NetworkTimeProtocol::fromDatetime(new DateTimeImmutable('now', new DateTimeZone('UTC')));
+        $before = NetworkTimeProtocol::fromDatetime(new DateTimeImmutable('now', new DateTimeZone('UTC')));
         [$high, $low] = NetworkTimeProtocol::currentNtpTime();
-        [$hiHigh] = NetworkTimeProtocol::fromDatetime(new DateTimeImmutable('now', new DateTimeZone('UTC')));
+        $after = NetworkTimeProtocol::fromDatetime(new DateTimeImmutable('now', new DateTimeZone('UTC')));
 
-        $this->assertGreaterThanOrEqual($loHigh, $high, 'NTP seconds went backwards');
-        $this->assertLessThanOrEqual($hiHigh, $high, 'NTP seconds ran ahead of the clock');
+        // Seconds and fraction, compared together.
+        $this->assertGreaterThanOrEqual($before, [$high, $low], 'NTP time went backwards');
+        $this->assertLessThanOrEqual($after, [$high, $low], 'NTP time ran ahead of the clock');
         // The fractional half is an unsigned 32-bit quantity.
         $this->assertGreaterThanOrEqual(0, $low);
         $this->assertLessThanOrEqual(0xFFFFFFFF, $low);
