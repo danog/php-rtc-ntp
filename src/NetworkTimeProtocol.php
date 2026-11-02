@@ -62,9 +62,13 @@ final class NetworkTimeProtocol
     {
         // Like fromDatetime(currentDatetime()), without creating and formatting date objects: this is
         // called for every packet that is sent.
-        $now = gettimeofday();
-        $high = ($now['sec'] - self::NTP_EPOCH) & 0xFFFFFFFF;
-        $low = intdiv($now['usec'] * (1 << 32), 1000000) & 0xFFFFFFFF;
+        // Not gettimeofday(), which also looks the timezone up (four times slower). The double of
+        // microtime(true) is gettimeofday()'s sec + usec / 10^6, within 0.25 µs: rounding gives usec back.
+        $now = microtime(true);
+        $sec = (int) $now;
+        $usec = (int) round(($now - (float) $sec) * 1000000.0);
+        $high = ($sec - self::NTP_EPOCH) & 0xFFFFFFFF;
+        $low = intdiv($usec * (1 << 32), 1000000) & 0xFFFFFFFF;
 
         return [$high, $low];
     }
